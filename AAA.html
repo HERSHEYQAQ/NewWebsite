@@ -8,7 +8,7 @@
       body {
         margin: 8px;
         height: 100vh;
-        background: linear-gradient(to bottom right, #f0ba3a, #f0643a);
+       background: linear-gradient(to bottom right, rgba(240, 186, 58, 0.8), rgba(240, 100, 58, 0.8));
       }
       .white {
         background-color: white;
@@ -27,8 +27,21 @@
         height: 200px;
         width: 150px;
         border-radius: 15px;
-        background: linear-gradient(to bottom right, #6678ff, #ea66ff);
+       background: linear-gradient(to bottom right, #f0ba3a, #f0643a);
       }
+      .jumpBottom:hover {
+        background: linear-gradient(to bottom right, #5766d9, #c757d9);
+      }
+
+      .jumpBottom:active {
+        transform: scale(0.95);
+      }
+      .bigHeader {
+        color: white;
+        font-weight: 900;
+        font-size: 30px;
+      }
+
       .shadow {
         box-shadow: rgb(0 0 0/20%) 0px 2px 1px -1px,
           rgb(0 0 0/14%) 0px 1px 1px 0px, rgb(0 0 0/12%) 0px 1px 3px 0px;
@@ -62,9 +75,69 @@
         margin-top: 180px;
       "
     >
-      <!--窗口1：作品集-->
-      <div onclick="" class="jumpBottom">
-        
+      <!--窗口1：个人简介-->
+      <div
+        onclick="window.location.href='https://hersheyqaq.github.io/NewWebsite'"
+        class="jumpBottom"
+        style="text-align: center"
+      >
+        <image
+          src="https://i.postimg.cc/rsk2Stns/image.png"
+          alt="xlms.png"
+          border="0"
+          width="80px"
+          height="80px"
+          style="margin-top: 25px"
+        />
+        <div class="bigHeader">作品集</div>
+      </div>
+       <!--窗口2：作品集-->
+      <div
+        onclick="window.location.href='https://hersheyqaq.github.io/NewWebsite'"
+        class="jumpBottom"
+        style="text-align: center"
+      >
+        <image
+          src="https://i.postimg.cc/rsk2Stns/image.png"
+          alt="xlms.png"
+          border="0"
+          width="80px"
+          height="80px"
+          style="margin-top: 25px"
+        />
+        <div class="bigHeader">作品集</div>
+      </div>
+       <!--窗口3：生活记录-->
+      <div
+        onclick="window.location.href='https://hersheyqaq.github.io/NewWebsite'"
+        class="jumpBottom"
+        style="text-align: center"
+      >
+        <image
+          src="https://i.postimg.cc/rsk2Stns/image.png"
+          alt="xlms.png"
+          border="0"
+          width="80px"
+          height="80px"
+          style="margin-top: 25px"
+        />
+        <div class="bigHeader">作品集</div>
+      </div>
+       <!--窗口4：实用工具-->
+      <div
+        onclick="window.location.href='https://hersheyqaq.github.io/NewWebsite'"
+        class="jumpBottom"
+        style="text-align: center"
+      >
+        <image
+          src="https://i.postimg.cc/rsk2Stns/image.png"
+          alt="xlms.png"
+          border="0"
+          width="80px"
+          height="80px"
+          style="margin-top: 25px"
+        />
+        <div class="bigHeader">作品集</div>
       </div>
     </div>
   </body>
