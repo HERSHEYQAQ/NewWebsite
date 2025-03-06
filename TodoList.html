@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>智能待办清单</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Arial, sans-serif;
+      }
+
+      body {
+        background: #f5f5f5;
+        padding: 2rem;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 2.4rem;
+      }
+
+      h2 {
+        color: #7f8c8d;
+        margin: 1.5rem 0;
+        font-size: 1.4rem;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 2rem;
+      }
+
+      #itemInput {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      #itemInput:focus {
+        outline: none;
+        border-color: #3498db;
+      }
+
+      #addButton {
+        padding: 12px 24px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      #addButton:hover {
+        background: #2980b9;
+      }
+
+      .checklist {
+        list-style: none;
+        min-height: 50px;
+      }
+
+      .checklist-item {
+        display: flex;
+        align-items: center;
+        padding: 14px;
+        background: #f8f9fa;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        cursor: move;
+        transition: all 0.3s ease;
+      }
+
+      .checklist-item.dragging {
+        opacity: 0.5;
+        background: #ecf0f1;
+      }
+
+      .toggle-check {
+        width: 18px;
+        height: 18px;
+        margin-right: 12px;
+        cursor: pointer;
+      }
+
+      .item-text {
+        flex: 1;
+        transition: color 0.3s ease;
+      }
+
+      .completed .item-text {
+        color: #95a5a6;
+        text-decoration: line-through;
+      }
+
+      .delete-btn {
+        margin-left: 12px;
+        padding: 6px 12px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .checklist-item:hover .delete-btn {
+        opacity: 1;
+      }
+
+      .completed-list .checklist-item {
+        background: #ecf0f1;
+        cursor: default;
+      }
+      .edit-input {
+        flex: 1;
+        padding: 8px;
+        border: 2px solid #3498db;
+        border-radius: 6px;
+        font-size: 1rem;
+        margin-right: 10px;
+      }
+
+      .edit-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .save-btn {
+        background: #2ecc71 !important;
+        padding: 6px 12px;
+      }
+
+      .cancel-btn {
+        background: #95a5a6 !important;
+        padding: 6px 12px;
+      }
+
+      .editing {
+        background: #e3f2fd !important;
+      }
+
+      .checklist-item.editing .delete-btn {
+        display: none;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="container">
+        <h1>可编辑待办清单</h1>
+        <div class="input-group">
+            <input type="text" id="itemInput" placeholder="输入新事项...">
+            <button id="addButton">添加</button>
+        </div>
+        
+        <h2>进行中</h2>
+        <ul class="checklist" id="pendingList"></ul>
+        
+        <h2>已完成</h2>
+        <ul class="checklist completed-list" id="completedList"></ul>
+    </div>
+
+    <script>
+      const STORAGE_KEY = "smartChecklist";
+      let items = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      let dragStartIndex;
+
+      // 初始化
+      function init() {
+        renderList();
+        setupEventListeners();
+        setupDragDrop();
+      }
+
+      // 渲染列表
+      function renderList() {
+        const pendingList = document.getElementById("pendingList");
+        const completedList = document.getElementById("completedList");
+
+        pendingList.innerHTML = "";
+        completedList.innerHTML = "";
+
+        items.forEach((item, index) => {
+          const li = document.createElement("li");
+          li.className = `checklist-item ${item.completed ? "completed" : ""}`;
+          li.draggable = !item.completed;
+          li.dataset.index = index;
+          li.innerHTML = `
+                    <input type="checkbox" class="toggle-check" ${
+                      item.completed ? "checked" : ""
+                    }>
+                    <span class="item-text">${item.text}</span>
+                    <button class="delete-btn" onclick="deleteItem(${index})">删除</button>
+                `;
+
+          item.completed
+            ? completedList.appendChild(li)
+            : pendingList.appendChild(li);
+        });
+
+        // 添加复选框事件
+        document.querySelectorAll(".toggle-check").forEach((checkbox) => {
+          checkbox.addEventListener("change", toggleComplete);
+        });
+      }
+function handleItemEdit(index) {
+            const item = items[index];
+            const li = document.querySelector(`[data-index="${index}"]`);
+            li.classList.add('editing');
+            
+            const textSpan = li.querySelector('.item-text');
+            const originalText = textSpan.textContent;
+            
+            // 创建编辑界面
+            const editHtml = `
+                <input class="edit-input" value="${originalText}">
+                <div class="edit-buttons">
+                    <button class="save-btn" onclick="saveEdit(${index})">保存</button>
+                    <button class="cancel-btn" onclick="cancelEdit(${index}, '${originalText}')">取消</button>
+                </div>
+            `;
+            
+            textSpan.outerHTML = editHtml;
+            li.querySelector('.edit-input').focus();
+        }
+
+        // 保存编辑
+        function saveEdit(index) {
+            const newText = document.querySelector(`[data-index="${index}"] .edit-input`).value.trim();
+            if (newText) {
+                items[index].text = newText;
+                saveAndRender();
+            }
+        }
+
+        // 取消编辑
+        function cancelEdit(index, originalText) {
+            items[index].text = originalText;
+            saveAndRender();
+        }
+
+        // 修改renderList函数，添加双击事件
+        function renderList() {
+            const pendingList = document.getElementById('pendingList');
+            const completedList = document.getElementById('completedList');
+            
+            pendingList.innerHTML = '';
+            completedList.innerHTML = '';
+
+            items.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = `checklist-item ${item.completed ? 'completed' : ''}`;
+                li.draggable = !item.completed;
+                li.dataset.index = index;
+                li.innerHTML = `
+                    <input type="checkbox" class="toggle-check" ${item.completed ? 'checked' : ''}>
+                    <span class="item-text" ondblclick="handleItemEdit(${index})">${item.text}</span>
+                    <button class="delete-btn" onclick="deleteItem(${index})">删除</button>
+                `;
+                
+                item.completed ? completedList.appendChild(li) : pendingList.appendChild(li);
+            });
+
+            // 添加复选框事件
+            document.querySelectorAll('.toggle-check').forEach(checkbox => {
+                checkbox.addEventListener('change', toggleComplete);
+            });
+        }
+      // 添加新事项
+      function addItem(text) {
+        if (text.trim() === "") return;
+        items.push({
+          text,
+          completed: false,
+          timestamp: Date.now(),
+        });
+        saveAndRender();
+        document.getElementById("itemInput").value = "";
+      }
+
+      // 删除事项
+      function deleteItem(index) {
+        items.splice(index, 1);
+        saveAndRender();
+      }
+
+      // 切换完成状态
+      function toggleComplete(e) {
+        const index = e.target.closest("li").dataset.index;
+        items[index].completed = !items[index].completed;
+        saveAndRender();
+      }
+
+      // 拖放功能
+      function setupDragDrop() {
+        const container = document.getElementById("pendingList");
+        let draggedItem;
+
+        container.addEventListener("dragstart", (e) => {
+          if (!e.target.classList.contains("checklist-item")) return;
+          draggedItem = e.target;
+          dragStartIndex = [...container.children].indexOf(draggedItem);
+          setTimeout(() => draggedItem.classList.add("dragging"), 0);
+        });
+
+        container.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          const afterElement = getDragAfterElement(container, e.clientY);
+          const currentItem = document.querySelector(".dragging");
+
+          if (!currentItem || !afterElement) {
+            container.appendChild(currentItem);
+          } else {
+            container.insertBefore(currentItem, afterElement);
+          }
+        });
+
+        container.addEventListener("dragend", () => {
+          draggedItem.classList.remove("dragging");
+          const dragEndIndex = [...container.children].indexOf(draggedItem);
+
+          if (dragStartIndex !== dragEndIndex) {
+            const pendingItems = items.filter((item) => !item.completed);
+            const [removed] = pendingItems.splice(dragStartIndex, 1);
+            pendingItems.splice(dragEndIndex, 0, removed);
+
+            // 合并回原始数组
+            items = [
+              ...pendingItems,
+              ...items.filter((item) => item.completed),
+            ];
+
+            saveAndRender();
+          }
+        });
+      }
+
+      function getDragAfterElement(container, y) {
+        return [...container.children]
+          .filter((item) => !item.classList.contains("dragging"))
+          .reduce(
+            (closest, child) => {
+              const box = child.getBoundingClientRect();
+              const offset = y - box.top - box.height / 2;
+              return offset < 0 && offset > closest.offset
+                ? { offset, element: child }
+                : closest;
+            },
+            { offset: Number.NEGATIVE_INFINITY }
+          ).element;
+      }
+
+      // 辅助函数
+      function saveAndRender() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        renderList();
+      }
+
+      // 事件监听
+      function setupEventListeners() {
+        document.getElementById("addButton").addEventListener("click", () => {
+          addItem(document.getElementById("itemInput").value);
+        });
+
+        document
+          .getElementById("itemInput")
+          .addEventListener("keypress", (e) => {
+            if (e.key === "Enter") addItem(e.target.value);
+          });
+      }
+
+      // 启动
+      init();
+    </script>
+  </body>
+</html>
