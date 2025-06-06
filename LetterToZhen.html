@@ -19,17 +19,18 @@
         background: linear-gradient(135deg, #8a6d3b, #5d4037);
         min-height: 100vh;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        justify-content: flex-start;
         align-items: center;
         font-family: "Dancing Script", cursive;
         padding: 20px;
         position: relative;
-        overflow: hidden;
+        overflow: auto;
       }
 
       body::before {
         content: "";
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
         right: 0;
@@ -39,14 +40,24 @@
         z-index: -1;
       }
 
-      /* 信封容器 */
+      /* 信封容器 - 初始居中 */
       .envelope-container {
-        position: relative;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         width: 100%;
         max-width: 460px;
         height: 300px;
-        margin: 40px auto;
-        perspective: 1200px;
+        z-index: 20;
+        transition: all 1s ease;
+      }
+
+      /* 信封移动到顶部后的样式 */
+      .envelope-container.moved {
+        top: 40px;
+        left: 50%;
+        transform: translateX(-50%) scale(0.8);
       }
 
       /* 信封本体 */
@@ -60,6 +71,7 @@
         box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
         overflow: hidden;
         transition: transform 1s ease;
+        cursor: pointer;
       }
 
       /* 正面封口（三角形） */
@@ -129,6 +141,22 @@
         font-weight: 500;
       }
 
+      .stamp {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 80px;
+        height: 100px;
+        background: #f3d9b1;
+        border: 2px dashed #d4b483;
+        border-radius: 5px;
+        transform: rotate(10deg);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 3;
+      }
+
       .stamp-inner {
         font-family: "Courier New", monospace;
         font-size: 0.65rem;
@@ -137,18 +165,31 @@
         line-height: 1.1;
         text-transform: uppercase;
       }
-
+      /* 在CSS中添加以下规则 */
+      .envelope-container.hidden {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s ease, visibility 0.5s;
+      }
+      /* 删除或注释掉以下规则 */
+      .open .envelope {
+        transform: rotateY(180deg);
+      }
       /* 信纸内容 */
       .letter-container {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0);
+        position: relative;
         width: 100%;
         max-width: 800px;
+        margin: 60px auto 100px;
         opacity: 0;
+        transform: translateY(50px);
         transition: all 1s ease-in-out;
         transition-delay: 0.5s;
+      }
+
+      /* 添加顶部内边距避免被信封遮挡 */
+      body.open .letter-container {
+        padding-top: 240px;
       }
 
       .letter {
@@ -283,8 +324,8 @@
       }
 
       .open .letter-container {
-        transform: translate(-50%, -50%) scale(1);
         opacity: 1;
+        transform: translateY(0);
       }
 
       .music-control {
@@ -330,6 +371,74 @@
         animation: pulse 1.5s infinite;
       }
 
+      /* 滚动指示器 */
+      .scroll-indicator {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 99;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+
+      .open .scroll-indicator {
+        opacity: 1;
+      }
+
+      .scroll-text {
+        color: #f8f0d7;
+        font-size: 1rem;
+        margin-bottom: 10px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        animation: fadeInOut 2s infinite;
+      }
+
+      .scroll-icon {
+        width: 30px;
+        height: 50px;
+        border: 2px solid #f8f0d7;
+        border-radius: 15px;
+        position: relative;
+      }
+
+      .scroll-icon::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 10px;
+        background: #f8f0d7;
+        border-radius: 2px;
+        animation: scroll 2s infinite;
+      }
+
+      @keyframes scroll {
+        0% {
+          top: 10px;
+          opacity: 1;
+        }
+        100% {
+          top: 30px;
+          opacity: 0;
+        }
+      }
+
+      @keyframes fadeInOut {
+        0%,
+        100% {
+          opacity: 0.5;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
       @keyframes pulse {
         0% {
           transform: scale(1);
@@ -354,7 +463,7 @@
       }
 
       .falling-leaves {
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
         width: 100%;
@@ -399,12 +508,24 @@
           max-width: 400px;
         }
 
+        .envelope-container.moved {
+          transform: translateX(-50%) scale(0.7);
+        }
+
         .open-instruction {
           font-size: 1.5rem;
         }
 
         .to-label {
           font-size: 1.3rem;
+        }
+
+        .letter-container {
+          margin: 40px auto 80px;
+        }
+
+        body.open .letter-container {
+          padding-top: 180px;
         }
       }
     </style>
@@ -447,50 +568,77 @@
 
         <div class="letter-content">
           <div class="letter-header">
-            <h1>致特别的你</h1>
-            <div class="date">2023年11月15日</div>
+            <h1>致最最特别的祯</h1>
+            <div class="date">2025年6月6日</div>
           </div>
 
           <div class="letter-body">
-            <p>亲爱的朋友：</p>
+            <p>To亲爱的祯：</p>
 
             <p>
-              提笔之际，窗外秋意正浓。金黄的树叶在微风中轻轻摇曳，仿佛在诉说着季节的故事。此刻，我想通过这封特别的信笺，与你分享我心中的思绪。
+              嘿，最近还还好嘛，有好好休息嘛，睡的怎么样，希望上一段感情的结束没有太过残酷，希望你能快点走出来。山茶花不应该泡在雨水中太长，阳光才能让她滋长。
             </p>
 
             <p>
-              人生如旅途，我们时常在忙碌中奔波，却忘记了停下脚步欣赏沿途的风景。那些温暖的阳光、轻柔的微风、朋友的微笑，都是生活赠予我们的珍贵礼物。
+              再次收到你消息的时候，正好在一趟旅行之中，火车站里听闻你受到了暴力的威胁，我心一沉，下意识的为你担忧，尽管我也怀疑我是否有这资格，毕竟现在的我们也只如陌生人一般，我没有理由也没有身份沾染这层因果。几天之后你带来了分手的消息，你需要缓缓，我也有勇气打开你生日给我寄的两样东西了。
             </p>
 
             <p>
-              记得我们上次相聚，是在那个充满栀子花香的夏夜。我们谈天说地，从童年的趣事聊到未来的憧憬。那时星光璀璨，而你的眼中闪烁着比星辰更明亮的光芒。这些美好的瞬间，如同珍珠般镶嵌在我记忆的项链上。
+              你的礼物我总是很喜欢，都是毛茸茸的东西，最早的胡萝卜和抱着瓜子的鼠鼠，还有现在的酷洛米和小兔子，他们总是让我想起和你依偎的那段时光，在我怀里的你就像一只小动物一样。那封信我也仔仔细细看了好多遍，好多遍。这也让我想了很久，很久。我花了很多时间整理思绪，这对我的感情观是个很大的冲击，我真正认识到我到底需要什么，这样我才可以义无反顾的，倾尽所有奔向你，幸运的是，我想清楚了。
             </p>
 
             <p>
-              在这个数字化的时代，一封手写的信或许显得格外珍贵。它承载着书写者的温度与情感，穿越时空来到你的面前。希望这封信能带给你一丝温暖，如同冬日里的一杯热茶。
+              最开始，我的烦恼集中在：一方面，你的习惯性撒谎（这实际来源于你小时候亲密关系中的不安全感）和不忠注定了你在传统亲密关系叙事中扮演不了一个好角色。另一方面，我也很清楚究竟渴求你什么，在我过去所有的亲密关系（包括父母亲人）中你是唯一一个我可以绝对坦诚的人，在可以遇见的未来也会是那个我可以100%坦白的人。我想这可能基于我们相似的道德价值观。
             </p>
 
             <p>
-              生活总有起伏，但请相信，每一次挑战都是成长的契机。当遇到困难时，请记得你并不孤单，远方总有人默默支持着你、相信着你。
+              但后面我还是理清楚了，前者其实根本就不算什么问题。现代社会滚滚向前，也许我根本就不需要那套传统的亲密关系叙事，我完全可以拥抱开放性关系，就像我们喜欢的那对博主：夏美和杰西卡。我也简单畅想了一下，这种关系也符合我的风格。人与人之间的关系似水如风，越是用力抓住越是从指尖溜走，那种基于契约与道德绑定的亲密关系在现代社会无不在接受着挑战，我身边见到的例子比比皆是。
             </p>
 
             <p>
-              期待不久后能与你重逢，分享彼此的欢笑与故事。愿这封信抵达时，你的脸上正绽放着灿烂的笑容。
+              我将恋爱中的人们简单定位成两种：情人与供养者。供养者类似于大部分中国男性，渴望婚姻与后代的延续，他们中的很多没那么有趣，不太懂浪漫，但是很专一，愿意为伴侣花钱。情人们，我觉得更像你我，追寻浪漫，有能力把对象逗的一阵一阵的，但他们不会忠于一人，他们只忠于爱情。
+            </p>
+
+            <p>
+              我预想的结局只有三种：要么浪子回头，成为那个供养者，回归到那套传统的婚姻叙事中，娶一个老实人白头偕老。要么当一辈子情人，一生忠于浪漫，目前我觉得更符合我的价值观（就是我就算渴望第一种，凭我对自己的了解，我也只能做到第二种）。当然，我觉得最可能是第三种，现在尚且年轻，我怎么能早早就决定这一生的追求。我更希望和你一起探索，直到我想清楚我自己究竟想要什么。也许在多年之后，我们因为彼此而更加珍视那些一诺千金，那些白首与共。人总是会变，我如今的想法已经与10年的前的我大不相同，十年后的我亦是如此。大人们总说越长大越渴望稳定，他们的话也渐渐在我身上印证。年少的公务员总渴望跳出死水一般的体制，35岁濒临裁员的文员只恨自己当年没考公。不同年龄段的需求总是错位，工作如此，亲密关系亦是如此。
+            </p>
+
+            <p>
+              所以，你愿意和我一起走进这条探索自我的道路吗。回归传统还是拥抱开放，这个问题可能永远不会有答案，一直在变的我们可能也永远无法找到那个最优解，所以我不再过度思考，不再己人忧天，我只是抓住眼前的这个念头：我想要你。
+            </p>
+
+            <p>
+              我也探索寻觅过如此多段的亲密关系，我深知你我二人的那般亲密有多么难得。我可以不问过往，那些伤心的压抑的潮湿的回忆就让他们过去。我想和你有未来，不管我们能走多远路有多长。我们的相遇是一份礼物，你若也有此意，就让爱意自由滋长。
+            </p>
+
+            <p>后记</p>
+
+            <p>
+              最早写这个是想也回一封信的，想着和拼好的积木一起寄过来。但是这个没有图纸的积木确实太难拼了，所以我打算用另一种形式——网页，来做载体。搭网站也花了一些时间，信也反反复复改了很多天，你若有意，我一直在对岸等你。
             </p>
           </div>
 
           <div class="letter-footer">
-            <div class="signature">你永远的朋友</div>
+            <div class="signature">Yours faithfully,</div>
+            <!-- 空行效果 -->
+            <div style="height: 20px"></div>
+            <div class="signature">Hershey</div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- 滚动指示器 -->
+    <div class="scroll-indicator" id="scrollIndicator">
+      <div class="scroll-text">向下滚动阅读信件</div>
+      <div class="scroll-icon"></div>
     </div>
 
     <button class="music-control" id="musicBtn">♪</button>
 
     <audio id="bgm" loop>
       <source
-        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        src="https://hersheyqaq.github.io/NewWebsite/%E8%B5%B0%E9%A9%AC.MP3"
         type="audio/mpeg"
       />
     </audio>
@@ -500,6 +648,7 @@
         const envelopeContainer = document.getElementById("envelopeContainer");
         const letterContainer = document.getElementById("letterContainer");
         const musicBtn = document.getElementById("musicBtn");
+        const scrollIndicator = document.getElementById("scrollIndicator");
         const bgm = document.getElementById("bgm");
         const body = document.body;
         const leavesContainer = document.getElementById("leaves");
@@ -535,14 +684,30 @@
           if (opened) return;
 
           opened = true;
-          body.classList.add("open");
 
-          // 自动播放音乐
+          // 先移动信封到顶部
+          envelopeContainer.classList.add("moved");
+
+          // 移动完成后隐藏信封并显示信件
           setTimeout(() => {
-            bgm.play().catch((e) => console.log("播放失败:", e));
-            musicBtn.classList.add("playing");
-            isPlaying = true;
-          }, 1500);
+            // 添加隐藏类使信封消失
+            envelopeContainer.classList.add("hidden");
+
+            // 显示信件
+            body.classList.add("open");
+
+            // 自动播放音乐
+            setTimeout(() => {
+              bgm.play().catch((e) => console.log("播放失败:", e));
+              musicBtn.classList.add("playing");
+              isPlaying = true;
+
+              // 滚动到信件内容
+              setTimeout(() => {
+                letterContainer.scrollIntoView({ behavior: "smooth" });
+              }, 1000);
+            }, 500);
+          }, 1000);
         });
 
         // 音乐控制按钮
@@ -557,6 +722,15 @@
             musicBtn.classList.add("playing");
           }
           isPlaying = !isPlaying;
+        });
+
+        // 滚动时隐藏指示器
+        window.addEventListener("scroll", function () {
+          if (window.scrollY > 100) {
+            scrollIndicator.style.opacity = "0";
+          } else {
+            scrollIndicator.style.opacity = "1";
+          }
         });
 
         createLeaves();
