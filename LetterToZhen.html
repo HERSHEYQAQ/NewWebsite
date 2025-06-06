@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>给祯的信</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Great+Vibes&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: linear-gradient(135deg, #8a6d3b, #5d4037);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Dancing Script", cursive;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(139, 69, 19, 0.1)" stroke-width="1"/></svg>');
+        opacity: 0.3;
+        z-index: -1;
+      }
+
+      /* 信封容器 */
+      .envelope-container {
+        position: relative;
+        width: 100%;
+        max-width: 460px;
+        height: 300px;
+        margin: 40px auto;
+        perspective: 1200px;
+      }
+
+      /* 信封本体 */
+      .envelope {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: #fffdf8;
+        border: 2px solid #fffdf8;
+        border-radius: 10px;
+        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        transition: transform 1s ease;
+      }
+
+      /* 正面封口（三角形） */
+      .envelope-flap {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 50%;
+        background: #f3d9b1;
+        clip-path: polygon(0 0, 100% 0, 50% 100%);
+        z-index: 2;
+        box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      /* 封蜡印章 */
+      .flap-seal {
+        position: absolute;
+        top: 45%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: radial-gradient(circle at center, #e57373, #d32f2f);
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .flap-seal::before {
+        content: "✉️";
+        color: white;
+        font-size: 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        font-weight: bold;
+      }
+
+      /* 信封主体区域 */
+      .envelope-body {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        height: 50%;
+        padding: 20px;
+        box-sizing: border-box;
+        background: #fffdf8;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* 收件人标签 */
+      .to-label {
+        font-size: 1.4rem;
+        color: #6d4c41;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      /* 动态提示文字 */
+      .open-instruction {
+        font-size: 1.1rem;
+        color: #a1887f;
+        animation: pulse 1.8s infinite;
+        font-weight: 500;
+      }
+
+      .stamp-inner {
+        font-family: "Courier New", monospace;
+        font-size: 0.65rem;
+        text-align: center;
+        color: #c62828;
+        line-height: 1.1;
+        text-transform: uppercase;
+      }
+
+      /* 信纸内容 */
+      .letter-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        width: 100%;
+        max-width: 800px;
+        opacity: 0;
+        transition: all 1s ease-in-out;
+        transition-delay: 0.5s;
+      }
+
+      .letter {
+        background: #f8f0d7
+          url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(139, 69, 19, 0.1)" stroke-width="1"/></svg>');
+        background-size: 100px 100px;
+        border: 1px solid #d4b483;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2), 0 10px 30px rgba(0, 0, 0, 0.3),
+          inset 0 0 30px rgba(139, 69, 19, 0.1);
+        padding: 60px 40px;
+        position: relative;
+        border-radius: 5px;
+      }
+
+      .letter-content {
+        position: relative;
+        z-index: 2;
+      }
+
+      .letter-header {
+        text-align: center;
+        margin-bottom: 40px;
+        position: relative;
+      }
+
+      .letter-header h1 {
+        font-family: "Great Vibes", cursive;
+        font-size: 3.5rem;
+        color: #5d4037;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        letter-spacing: 3px;
+        margin-bottom: 10px;
+      }
+
+      .letter-header .date {
+        font-size: 1.4rem;
+        color: #8d6e63;
+        margin-bottom: 25px;
+      }
+
+      .letter-body {
+        font-size: 1.5rem;
+        line-height: 1.8;
+        color: #4e342e;
+        text-align: justify;
+        position: relative;
+      }
+
+      .letter-body p {
+        margin-bottom: 25px;
+        text-indent: 2em;
+      }
+
+      .letter-footer {
+        margin-top: 50px;
+        text-align: right;
+        padding-right: 60px;
+      }
+
+      .signature {
+        font-family: "Great Vibes", cursive;
+        font-size: 2.5rem;
+        color: #5d4037;
+        display: inline-block;
+        position: relative;
+      }
+
+      /* 装饰元素 */
+      .ink-blot {
+        position: absolute;
+        opacity: 0.2;
+        z-index: 1;
+      }
+
+      .blot-1 {
+        top: 15%;
+        left: 10%;
+        width: 80px;
+        height: 80px;
+        background: radial-gradient(circle, #5d4037 10%, transparent 70%);
+        border-radius: 50%;
+      }
+
+      .blot-2 {
+        bottom: 20%;
+        right: 12%;
+        width: 60px;
+        height: 60px;
+        background: radial-gradient(circle, #5d4037 15%, transparent 70%);
+        border-radius: 50% 30% 50% 30%;
+        transform: rotate(45deg);
+      }
+
+      .blot-3 {
+        top: 40%;
+        right: 20%;
+        width: 40px;
+        height: 40px;
+        background: radial-gradient(circle, #5d4037 20%, transparent 70%);
+        border-radius: 50%;
+      }
+
+      .fold-line {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 30px;
+        background: linear-gradient(
+          to bottom,
+          rgba(139, 69, 19, 0.1),
+          transparent
+        );
+        border-bottom: 1px dashed rgba(139, 69, 19, 0.3);
+      }
+
+      .fold-line.bottom {
+        top: auto;
+        bottom: 0;
+        background: linear-gradient(
+          to top,
+          rgba(139, 69, 19, 0.1),
+          transparent
+        );
+        border-top: 1px dashed rgba(139, 69, 19, 0.3);
+        border-bottom: none;
+      }
+
+      /* 打开状态 */
+      .open .envelope {
+        transform: rotateY(180deg);
+      }
+
+      .open .letter-container {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+
+      .music-control {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(139, 69, 19, 0.8);
+        color: #f8f0d7;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        z-index: 100;
+        transition: all 0.3s ease;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.5s ease 1.5s;
+      }
+
+      .open .music-control {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .music-control:hover {
+        background: rgba(121, 85, 72, 0.9);
+        transform: scale(1.1);
+      }
+
+      .music-control.playing::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 2px solid #f8f0d7;
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1.5);
+          opacity: 0;
+        }
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+        100% {
+          transform: translateY(0);
+        }
+      }
+
+      .falling-leaves {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .leaf {
+        position: absolute;
+        font-size: 2rem;
+        color: #d4b483;
+        opacity: 0.7;
+        animation: fall linear infinite;
+      }
+
+      @keyframes fall {
+        to {
+          transform: translateY(100vh) rotate(360deg);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .letter {
+          padding: 40px 20px;
+        }
+
+        .letter-header h1 {
+          font-size: 2.5rem;
+        }
+
+        .letter-body {
+          font-size: 1.2rem;
+        }
+
+        .signature {
+          font-size: 2rem;
+        }
+
+        .envelope-container {
+          height: 250px;
+          max-width: 400px;
+        }
+
+        .open-instruction {
+          font-size: 1.5rem;
+        }
+
+        .to-label {
+          font-size: 1.3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 落叶背景 -->
+    <div class="falling-leaves" id="leaves"></div>
+
+    <!-- 信封容器 -->
+    <div class="envelope-container" id="envelopeContainer">
+      <div class="envelope">
+        <div class="envelope-face envelope-front">
+          <div class="envelope-flap">
+            <div class="flap-seal"></div>
+          </div>
+          <div class="envelope-body">
+            <div class="to-label">致：祯</div>
+            <div class="open-instruction">点击开启信件</div>
+          </div>
+          <div class="stamp">
+            <div class="stamp-inner">
+              重要信件<br />
+              请亲启
+            </div>
+          </div>
+        </div>
+        <div class="envelope-face envelope-back"></div>
+      </div>
+    </div>
+
+    <!-- 信件内容 -->
+    <div class="letter-container" id="letterContainer">
+      <div class="letter">
+        <div class="ink-blot blot-1"></div>
+        <div class="ink-blot blot-2"></div>
+        <div class="ink-blot blot-3"></div>
+
+        <div class="fold-line"></div>
+        <div class="fold-line bottom"></div>
+
+        <div class="letter-content">
+          <div class="letter-header">
+            <h1>致特别的你</h1>
+            <div class="date">2023年11月15日</div>
+          </div>
+
+          <div class="letter-body">
+            <p>亲爱的朋友：</p>
+
+            <p>
+              提笔之际，窗外秋意正浓。金黄的树叶在微风中轻轻摇曳，仿佛在诉说着季节的故事。此刻，我想通过这封特别的信笺，与你分享我心中的思绪。
+            </p>
+
+            <p>
+              人生如旅途，我们时常在忙碌中奔波，却忘记了停下脚步欣赏沿途的风景。那些温暖的阳光、轻柔的微风、朋友的微笑，都是生活赠予我们的珍贵礼物。
+            </p>
+
+            <p>
+              记得我们上次相聚，是在那个充满栀子花香的夏夜。我们谈天说地，从童年的趣事聊到未来的憧憬。那时星光璀璨，而你的眼中闪烁着比星辰更明亮的光芒。这些美好的瞬间，如同珍珠般镶嵌在我记忆的项链上。
+            </p>
+
+            <p>
+              在这个数字化的时代，一封手写的信或许显得格外珍贵。它承载着书写者的温度与情感，穿越时空来到你的面前。希望这封信能带给你一丝温暖，如同冬日里的一杯热茶。
+            </p>
+
+            <p>
+              生活总有起伏，但请相信，每一次挑战都是成长的契机。当遇到困难时，请记得你并不孤单，远方总有人默默支持着你、相信着你。
+            </p>
+
+            <p>
+              期待不久后能与你重逢，分享彼此的欢笑与故事。愿这封信抵达时，你的脸上正绽放着灿烂的笑容。
+            </p>
+          </div>
+
+          <div class="letter-footer">
+            <div class="signature">你永远的朋友</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="music-control" id="musicBtn">♪</button>
+
+    <audio id="bgm" loop>
+      <source
+        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        type="audio/mpeg"
+      />
+    </audio>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const envelopeContainer = document.getElementById("envelopeContainer");
+        const letterContainer = document.getElementById("letterContainer");
+        const musicBtn = document.getElementById("musicBtn");
+        const bgm = document.getElementById("bgm");
+        const body = document.body;
+        const leavesContainer = document.getElementById("leaves");
+        let isPlaying = false;
+        let opened = false;
+
+        // 创建落叶
+        function createLeaves() {
+          const leafIcons = ["🍂", "🍁", "🍃"];
+          for (let i = 0; i < 15; i++) {
+            const leaf = document.createElement("div");
+            leaf.classList.add("leaf");
+            leaf.textContent =
+              leafIcons[Math.floor(Math.random() * leafIcons.length)];
+            leaf.style.left = Math.random() * 100 + "vw";
+            leaf.style.animationDuration = Math.random() * 5 + 10 + "s";
+            leaf.style.animationDelay = Math.random() * 5 + "s";
+            leaf.style.fontSize = Math.random() * 10 + 20 + "px";
+            leavesContainer.appendChild(leaf);
+          }
+        }
+
+        // 用户交互后开始播放音乐
+        function initAudio() {
+          bgm.volume = 0.4;
+          document.removeEventListener("click", initAudio);
+        }
+
+        document.addEventListener("click", initAudio);
+
+        // 点击信封
+        envelopeContainer.addEventListener("click", function () {
+          if (opened) return;
+
+          opened = true;
+          body.classList.add("open");
+
+          // 自动播放音乐
+          setTimeout(() => {
+            bgm.play().catch((e) => console.log("播放失败:", e));
+            musicBtn.classList.add("playing");
+            isPlaying = true;
+          }, 1500);
+        });
+
+        // 音乐控制按钮
+        musicBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+
+          if (isPlaying) {
+            bgm.pause();
+            musicBtn.classList.remove("playing");
+          } else {
+            bgm.play().catch((e) => console.log("播放失败:", e));
+            musicBtn.classList.add("playing");
+          }
+          isPlaying = !isPlaying;
+        });
+
+        createLeaves();
+      });
+    </script>
+  </body>
+</html>
